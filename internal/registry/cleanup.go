@@ -19,15 +19,17 @@ type TagInfo struct {
 	CreatedAt time.Time
 }
 
-func CleanupRegistry(ctx context.Context, client *Client, cfg config.Registry, dryRun bool, logger *slog.Logger) error {
+func CleanupRegistry(ctx context.Context, client *Client, cfg config.Registry, dryRun bool, logger *slog.Logger) ([]string, error) {
 	logger.Info("starting registry cleanup", "url", cfg.URL)
 
 	repos, err := client.GetCatalog(ctx)
 	if err != nil {
-		return fmt.Errorf("getting catalog: %w", err)
+		return nil, fmt.Errorf("getting catalog: %w", err)
 	}
 
 	logger.Info("found repositories", "count", len(repos))
+
+	var emptyRepos []string
 
 	for _, repo := range repos {
 		if cfg.RepoSkip(repo) {
@@ -35,35 +37,39 @@ func CleanupRegistry(ctx context.Context, client *Client, cfg config.Registry, d
 			continue
 		}
 
-		if err := cleanupRepo(ctx, client, cfg, repo, dryRun, logger); err != nil {
-			return fmt.Errorf("cleaning repo %s: %w", repo, err)
+		isEmpty, err := cleanupRepo(ctx, client, cfg, repo, dryRun, logger)
+		if err != nil {
+			return nil, fmt.Errorf("cleaning repo %s: %w", repo, err)
+		}
+		if isEmpty {
+			emptyRepos = append(emptyRepos, repo)
 		}
 	}
 
-	return nil
+	return emptyRepos, nil
 }
 
-func cleanupRepo(ctx context.Context, client *Client, cfg config.Registry, repo string, dryRun bool, logger *slog.Logger) error {
+func cleanupRepo(ctx context.Context, client *Client, cfg config.Registry, repo string, dryRun bool, logger *slog.Logger) (bool, error) {
 	repoLogger := logger.With("repo", repo)
 
 	tags, err := client.ListTags(ctx, repo)
 	if err != nil {
-		return fmt.Errorf("listing tags: %w", err)
+		return false, fmt.Errorf("listing tags: %w", err)
 	}
 
 	if len(tags) == 0 {
 		repoLogger.Info("no tags found")
-		return nil
+		return true, nil
 	}
 
 	tagFilter, err := cfg.RepoTagFilter(repo)
 	if err != nil {
-		return fmt.Errorf("compiling tag filter: %w", err)
+		return false, fmt.Errorf("compiling tag filter: %w", err)
 	}
 
 	tagInfos, err := fetchTagInfo(ctx, client, repo, tags, tagFilter, repoLogger)
 	if err != nil {
-		return fmt.Errorf("fetching tag info: %w", err)
+		return false, fmt.Errorf("fetching tag info: %w", err)
 	}
 
 	keep := cfg.RepoKeep(repo)
@@ -73,7 +79,7 @@ func cleanupRepo(ctx context.Context, client *Client, cfg config.Registry, repo 
 
 	if len(toDelete) == 0 {
 		repoLogger.Info("nothing to delete")
-		return nil
+		return false, nil
 	}
 
 	for _, tag := range toDelete {
@@ -84,12 +90,12 @@ func cleanupRepo(ctx context.Context, client *Client, cfg config.Registry, repo 
 
 		repoLogger.Info("deleting manifest", "tag", tag.Tag, "digest", tag.Digest)
 		if err := client.DeleteManifest(ctx, repo, tag.Digest); err != nil {
-			return fmt.Errorf("deleting manifest %s: %w", tag.Digest, err)
+			return false, fmt.Errorf("deleting manifest %s: %w", tag.Digest, err)
 		}
 	}
 
 	repoLogger.Info("cleanup complete", "deleted", len(toDelete), "kept", len(tagInfos)-len(toDelete))
-	return nil
+	return false, nil
 }
 
 func fetchTagInfo(ctx context.Context, client *Client, repo string, tags []string, tagFilter *regexp.Regexp, logger *slog.Logger) ([]TagInfo, error) {

@@ -51,8 +51,16 @@ func main() {
 				return err
 			}
 
-			if err := registry.CleanupRegistry(ctx, client, reg, cfg.DryRun, regLogger); err != nil {
+			emptyRepos, err := registry.CleanupRegistry(ctx, client, reg, cfg.DryRun, regLogger)
+			if err != nil {
 				return err
+			}
+
+			if !cfg.DryRun && len(emptyRepos) > 0 && reg.Kubernetes.DeleteEmptyRepos {
+				regLogger.Info("deleting empty repositories", "count", len(emptyRepos))
+				if err := gc.DeleteEmptyRepositories(ctx, reg.Kubernetes, emptyRepos, regLogger); err != nil {
+					return err
+				}
 			}
 
 			if !cfg.DryRun {

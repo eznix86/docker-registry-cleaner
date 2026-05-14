@@ -73,6 +73,8 @@ drc -c config.yaml
 | `kubernetes.label_selector` | string | No       | Label selector for pod discovery         |
 | `kubernetes.gc_config_path` | string | Yes      | Path to registry config inside container |
 | `kubernetes.gc_delete_unreferenced_blobs` | bool | No | Delete unreferenced blobs during GC |
+| `kubernetes.delete_empty_repos` | bool | No | Delete empty repository directories via `exec` |
+| `kubernetes.storage_path`   | string | No       | Registry storage path (default: `/var/lib/registry`) |
 
 #### Docker
 

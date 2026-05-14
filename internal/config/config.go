@@ -39,6 +39,8 @@ type Kubernetes struct {
 	LabelSelector             string `yaml:"label_selector"`
 	GCConfigPath              string `yaml:"gc_config_path"`
 	GCDeleteUnreferencedBlobs bool   `yaml:"gc_delete_unreferenced_blobs"`
+	DeleteEmptyRepos          bool   `yaml:"delete_empty_repos"`
+	StoragePath               string `yaml:"storage_path"`
 }
 
 type Docker struct {

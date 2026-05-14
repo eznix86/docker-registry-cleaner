@@ -59,6 +59,32 @@ func (r *KubernetesRunner) RunGC(ctx context.Context) error {
 	return r.execInPod(ctx, podName, args)
 }
 
+func (r *KubernetesRunner) DeleteEmptyRepositories(ctx context.Context, repos []string) error {
+	if len(repos) == 0 {
+		return nil
+	}
+
+	podName, err := r.resolvePod(ctx)
+	if err != nil {
+		return fmt.Errorf("resolving pod: %w", err)
+	}
+
+	storagePath := r.cfg.StoragePath
+	if storagePath == "" {
+		storagePath = "/var/lib/registry"
+	}
+
+	for _, repo := range repos {
+		repoPath := fmt.Sprintf("%s/docker/registry/v2/repositories/%s", storagePath, repo)
+		command := []string{"rm", "-rf", repoPath}
+		if err := r.execInPod(ctx, podName, command); err != nil {
+			return fmt.Errorf("deleting empty repo %s: %w", repo, err)
+		}
+	}
+
+	return nil
+}
+
 func (r *KubernetesRunner) resolvePod(ctx context.Context) (string, error) {
 	labelSelector := r.cfg.LabelSelector
 	if labelSelector == "" {

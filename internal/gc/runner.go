@@ -54,3 +54,21 @@ func Run(ctx context.Context, cfg config.Registry, logger *slog.Logger) error {
 	logger.Info("skipping garbage collection (no kubernetes/docker block enabled)")
 	return nil
 }
+
+func DeleteEmptyRepositories(ctx context.Context, cfg config.Kubernetes, repos []string, logger *slog.Logger) error {
+	if !cfg.Enabled {
+		return nil
+	}
+
+	runner, err := NewKubernetes(cfg)
+	if err != nil {
+		return fmt.Errorf("creating kubernetes runner: %w", err)
+	}
+
+	if err := runner.DeleteEmptyRepositories(ctx, repos); err != nil {
+		return fmt.Errorf("kubernetes delete empty repos: %w", err)
+	}
+
+	logger.Info("empty repositories deleted via kubernetes", "count", len(repos))
+	return nil
+}
