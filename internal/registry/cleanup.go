@@ -9,8 +9,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/eznix86/registry-client"
 	"github.com/eznix86/docker-registry-cleaner/internal/config"
+	"github.com/eznix86/registry-client"
 )
 
 type TagInfo struct {
@@ -77,11 +77,14 @@ func cleanupRepo(ctx context.Context, client *Client, cfg config.Registry, repo 
 	}
 
 	for _, tag := range toDelete {
+		if dryRun {
+			repoLogger.Info("would delete manifest", "tag", tag.Tag, "digest", tag.Digest)
+			continue
+		}
+
 		repoLogger.Info("deleting manifest", "tag", tag.Tag, "digest", tag.Digest)
-		if !dryRun {
-			if err := client.DeleteManifest(ctx, repo, tag.Digest); err != nil {
-				return fmt.Errorf("deleting manifest %s: %w", tag.Digest, err)
-			}
+		if err := client.DeleteManifest(ctx, repo, tag.Digest); err != nil {
+			return fmt.Errorf("deleting manifest %s: %w", tag.Digest, err)
 		}
 	}
 
