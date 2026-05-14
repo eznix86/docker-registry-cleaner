@@ -68,3 +68,46 @@ func (r *DockerRunner) RunGC(ctx context.Context) error {
 
 	return nil
 }
+
+func (r *DockerRunner) DeleteEmptyRepositories(ctx context.Context, repos []string) error {
+	if len(repos) == 0 {
+		return nil
+	}
+
+	storagePath := r.cfg.StoragePath
+	if storagePath == "" {
+		storagePath = "/var/lib/registry"
+	}
+
+	for _, repo := range repos {
+		repoPath := fmt.Sprintf("%s/docker/registry/v2/repositories/%s", storagePath, repo)
+		command := []string{"rm", "-rf", repoPath}
+
+		execConfig := container.ExecOptions{
+			Tty:          false,
+			AttachStdout: false,
+			AttachStderr: false,
+			Cmd:          command,
+		}
+
+		execID, err := r.cli.ContainerExecCreate(ctx, r.cfg.Container, execConfig)
+		if err != nil {
+			return fmt.Errorf("creating exec for %s: %w", repo, err)
+		}
+
+		if err := r.cli.ContainerExecStart(ctx, execID.ID, container.ExecStartOptions{}); err != nil {
+			return fmt.Errorf("starting exec for %s: %w", repo, err)
+		}
+
+		inspect, err := r.cli.ContainerExecInspect(ctx, execID.ID)
+		if err != nil {
+			return fmt.Errorf("inspecting exec for %s: %w", repo, err)
+		}
+
+		if inspect.ExitCode != 0 {
+			return fmt.Errorf("deleting %s exited with code %d", repo, inspect.ExitCode)
+		}
+	}
+
+	return nil
+}

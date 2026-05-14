@@ -55,20 +55,34 @@ func Run(ctx context.Context, cfg config.Registry, logger *slog.Logger) error {
 	return nil
 }
 
-func DeleteEmptyRepositories(ctx context.Context, cfg config.Kubernetes, repos []string, logger *slog.Logger) error {
-	if !cfg.Enabled {
+func DeleteEmptyRepositories(ctx context.Context, kCfg config.Kubernetes, dCfg config.Docker, repos []string, logger *slog.Logger) error {
+	if kCfg.Enabled && kCfg.DeleteEmptyRepos {
+		runner, err := NewKubernetes(kCfg)
+		if err != nil {
+			return fmt.Errorf("creating kubernetes runner: %w", err)
+		}
+
+		if err := runner.DeleteEmptyRepositories(ctx, repos); err != nil {
+			return fmt.Errorf("kubernetes delete empty repos: %w", err)
+		}
+
+		logger.Info("empty repositories deleted via kubernetes", "count", len(repos))
 		return nil
 	}
 
-	runner, err := NewKubernetes(cfg)
-	if err != nil {
-		return fmt.Errorf("creating kubernetes runner: %w", err)
+	if dCfg.Enabled && dCfg.DeleteEmptyRepos {
+		runner, err := NewDocker(dCfg)
+		if err != nil {
+			return fmt.Errorf("creating docker runner: %w", err)
+		}
+
+		if err := runner.DeleteEmptyRepositories(ctx, repos); err != nil {
+			return fmt.Errorf("docker delete empty repos: %w", err)
+		}
+
+		logger.Info("empty repositories deleted via docker", "count", len(repos))
+		return nil
 	}
 
-	if err := runner.DeleteEmptyRepositories(ctx, repos); err != nil {
-		return fmt.Errorf("kubernetes delete empty repos: %w", err)
-	}
-
-	logger.Info("empty repositories deleted via kubernetes", "count", len(repos))
 	return nil
 }

@@ -84,6 +84,8 @@ drc -c config.yaml
 | `docker.container`          | string | Yes      | Container name or ID                     |
 | `docker.gc_config_path`     | string | Yes      | Path to registry config inside container |
 | `docker.gc_delete_unreferenced_blobs` | bool | No | Delete unreferenced blobs during GC |
+| `docker.delete_empty_repos` | bool   | No       | Delete empty repository directories via `exec` |
+| `docker.storage_path`       | string | No       | Registry storage path (default: `/var/lib/registry`) |
 
 ### Full Example
 
