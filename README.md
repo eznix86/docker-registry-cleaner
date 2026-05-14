@@ -133,6 +133,61 @@ helm repo update
 helm install drc drc/drc -n drc --create-namespace
 ```
 
+Create a Kubernetes Secret for registry credentials instead of putting passwords in `values.yaml`:
+
+```sh
+kubectl create namespace drc
+
+kubectl create secret generic registry-cleaner-credentials \
+  -n drc \
+  --from-literal=username='YOUR_USERNAME' \
+  --from-literal=password='YOUR_PASSWORD'
+```
+
+Reference the Secret through environment variables in your Helm values:
+
+```yaml
+config:
+  log_level: info
+  dry_run: true
+  concurrency: 1
+  timeout: 30s
+  registries:
+    - name: registry
+      url: http://docker-registry.docker-registry.svc.cluster.local:5000
+      keep: 5
+      username_env: REGISTRY_USERNAME
+      password_env: REGISTRY_PASSWORD
+      delete_untagged: true
+      kubernetes:
+        enabled: true
+        namespace: docker-registry
+        label_selector: app.kubernetes.io/name=docker-registry
+        gc_config_path: /etc/docker/registry/config.yml
+        gc_delete_unreferenced_blobs: true
+
+env:
+  - name: REGISTRY_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: registry-cleaner-credentials
+        key: username
+  - name: REGISTRY_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: registry-cleaner-credentials
+        key: password
+```
+
+Then install or upgrade with your values file:
+
+```sh
+helm upgrade --install drc drc/drc \
+  -n drc \
+  --create-namespace \
+  -f values.yaml
+```
+
 ### Docker Compose
 
 ```yaml
