@@ -1,0 +1,83 @@
+image:
+  repository: ghcr.io/eznix86/docker-registry-cleaner
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+# Config file content (will be mounted as ConfigMap)
+config: {}
+#   log_level: info
+#   dry_run: false
+#   concurrency: 3
+#   timeout: 30s
+#   registries:
+#     - name: production
+#       url: https://registry.example.com
+#       ...
+
+# Or reference an existing ConfigMap
+existingConfigMap: ""
+
+# CronJob schedule
+schedule: "0 2 * * *"
+# Set to true to suspend the CronJob
+suspend: false
+
+# SuccessfulJobsHistoryLimit and FailedJobsHistoryLimit
+successfulJobsHistoryLimit: 3
+failedJobsHistoryLimit: 1
+
+# BackoffLimit for the Job
+backoffLimit: 0
+
+# Resource limits
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# Security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  fsGroup: 65534
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# Service account
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+# RBAC
+rbac:
+  create: true
+
+# Extra environment variables
+env: []
+# - name: REGISTRY_PASSWORD
+#   valueFrom:
+#     secretKeyRef:
+#       name: registry-creds
+#       key: password
+
+# Extra volume mounts
+extraVolumes: []
+extraVolumeMounts: []
