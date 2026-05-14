@@ -1,0 +1,35 @@
+# ClusterRole — cluster-scoped, defines what drc can do
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: drc-gc
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create"]
+---
+# RoleBinding — namespace-scoped, binds the ClusterRole to the drc ServiceAccount
+# Place this in the same namespace where drc runs
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: drc-gc
+  namespace: drc-tools          # <-- change to where drc runs
+subjects:
+- kind: ServiceAccount
+  name: drc
+  namespace: drc-tools          # <-- change to where drc runs
+roleRef:
+  kind: ClusterRole
+  name: drc-gc
+  apiGroup: rbac.authorization.k8s.io
+---
+# ServiceAccount — for the drc CronJob
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: drc
+  namespace: drc-tools          # <-- change to where drc runs

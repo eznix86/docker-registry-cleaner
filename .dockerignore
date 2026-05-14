@@ -1,0 +1,9 @@
+.git
+.github
+.vscode
+.idea
+*.md
+!README.md
+charts/
+test/
+drc

@@ -1,0 +1,24 @@
+log_level: debug
+dry_run: false
+concurrency: 2
+timeout: 30s
+
+registries:
+  - name: k3s-registry
+    url: http://localhost:5003
+
+    kubernetes:
+      enabled: true
+      namespace: registry-test
+      workload: deployment
+      name: registry
+      gc_config_path: /etc/docker/registry/config.yml
+      gc_delete_unreferenced_blobs: true
+
+    keep: 3
+    delete_untagged: true
+
+    repos:
+      myapp/api:
+        keep: 2
+        tag_filter: "^\\d+\\.\\d+\\.\\d+$"

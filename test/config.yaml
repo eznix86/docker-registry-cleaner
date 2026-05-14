@@ -1,0 +1,43 @@
+log_level: debug
+dry_run: false
+concurrency: 2
+timeout: 30s
+
+registries:
+  - name: registry-auth
+    url: http://localhost:5001
+    username: admin
+    password: admin123
+
+    docker:
+      enabled: true
+      container: drc-registry-auth
+      gc_config_path: /etc/docker/registry/config.yml
+      gc_delete_unreferenced_blobs: true
+
+    keep: 3
+    delete_untagged: true
+
+    repos:
+      myapp/api:
+        keep: 2
+        tag_filter: "^\\d+\\.\\d+\\.\\d+$"
+
+      myapp/base:
+        skip: true
+
+  - name: registry-noauth
+    url: http://localhost:5002
+
+    docker:
+      enabled: true
+      container: drc-registry-noauth
+      gc_config_path: /etc/docker/registry/config.yml
+      gc_delete_unreferenced_blobs: true
+
+    keep: 4
+    delete_untagged: true
+
+    repos:
+      myapp/worker:
+        keep: 2

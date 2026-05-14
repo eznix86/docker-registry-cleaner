@@ -1,0 +1,28 @@
+services:
+  registry-auth:
+    image: registry:2
+    container_name: drc-registry-auth
+    ports:
+      - "5001:5000"
+    environment:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"
+    volumes:
+      - ./test/auth/htpasswd:/auth/htpasswd:ro
+      - registry-auth-data:/var/lib/registry
+
+  registry-noauth:
+    image: registry:2
+    container_name: drc-registry-noauth
+    ports:
+      - "5002:5000"
+    environment:
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"
+    volumes:
+      - registry-noauth-data:/var/lib/registry
+
+volumes:
+  registry-auth-data:
+  registry-noauth-data:

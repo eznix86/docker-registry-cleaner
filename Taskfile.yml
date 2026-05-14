@@ -1,0 +1,110 @@
+version: '3'
+
+vars:
+  IMAGE_NAME: docker-registry-cleaner
+  BUILDER_NAME: drc-multiarch
+  BINARY_NAME: drc
+
+  REGISTRY:
+    sh: |
+      if [ -n "${REGISTRY:-}" ]; then
+        printf "%s" "$REGISTRY"
+      else
+        echo "REGISTRY is required. Example: REGISTRY=ghcr.io/eznix86 task image-push" >&2
+        exit 1
+      fi
+
+  TAG:
+    sh: printf "%s" "${TAG:-0.1.0}"
+
+  FULL_IMAGE: "{{.REGISTRY}}/{{.IMAGE_NAME}}:{{.TAG}}"
+
+tasks:
+  build:
+    desc: Build the binary locally
+    cmds:
+      - go build -o {{.BINARY_NAME}} ./cmd/drc
+
+  test:registries:up:
+    desc: Start test registries
+    cmds:
+      - docker compose up -d
+
+  test:registries:down:
+    desc: Stop test registries and remove volumes
+    cmds:
+      - docker compose down -v
+
+  test:push-images:
+    desc: Push test images to local registries
+    cmds:
+      - ./test/images.sh
+
+  test:run:
+    desc: Run drc against test registries
+    deps: [build]
+    cmds:
+      - ./{{.BINARY_NAME}} -c test/config.yaml
+
+  test:run-dry:
+    desc: Run drc in dry-run mode against test registries
+    deps: [build]
+    cmds:
+      - ./{{.BINARY_NAME}} -c test/config.yaml --dry-run
+
+  image:builder:
+    desc: Ensure a multi-platform buildx builder exists
+    cmds:
+      - |
+        if ! docker buildx inspect "{{.BUILDER_NAME}}" >/dev/null 2>&1; then
+          docker buildx create \
+            --name "{{.BUILDER_NAME}}" \
+            --driver docker-container \
+            --use
+        else
+          docker buildx use "{{.BUILDER_NAME}}"
+        fi
+      - docker buildx inspect "{{.BUILDER_NAME}}" --bootstrap >/dev/null
+
+  image-build:
+    desc: Build the Docker image locally for the current platform
+    deps: [image:builder]
+    cmd: docker buildx build --builder "{{.BUILDER_NAME}}" -t "{{.FULL_IMAGE}}" --load .
+
+  image-build-multiarch:
+    desc: Build the multi-arch Docker image without pushing
+    deps: [image:builder]
+    cmd: docker buildx build --builder "{{.BUILDER_NAME}}" --platform linux/amd64,linux/arm64 -t "{{.FULL_IMAGE}}" .
+
+  image-push:
+    desc: Build and push the multi-arch Docker image
+    deps: [image:builder]
+    cmd: docker buildx build --builder "{{.BUILDER_NAME}}" --platform linux/amd64,linux/arm64 -t "{{.FULL_IMAGE}}" --push .
+
+  helm:lint:
+    desc: Lint the Helm chart
+    cmd: helm lint charts/drc
+
+  helm:template:
+    desc: Render the Helm chart templates
+    cmd: helm template drc charts/drc -f test/config.yaml
+
+  helm:install:
+    desc: Install the Helm chart
+    cmds:
+      - helm install drc charts/drc -n drc-tools --create-namespace -f test/config.yaml
+
+  helm:upgrade:
+    desc: Upgrade the Helm chart
+    cmds:
+      - helm upgrade drc charts/drc -n drc-tools -f test/config.yaml
+
+  helm:uninstall:
+    desc: Uninstall the Helm chart
+    cmds:
+      - helm uninstall drc -n drc-tools
+
+  clean:
+    desc: Remove build artifacts
+    cmds:
+      - rm -f {{.BINARY_NAME}}

@@ -1,0 +1,33 @@
+# Binaries
+drc
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*.test
+*.coverage
+*.cover
+
+# Build output
+bin/
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go
+go.sum
+
+# Test data
+test/auth/htpasswd
