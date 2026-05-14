@@ -27,7 +27,6 @@ dist/
 Thumbs.db
 
 # Go
-go.sum
 
 # Test data
 test/auth/htpasswd

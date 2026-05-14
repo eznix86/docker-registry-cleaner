@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/eznix86/docker-registry-cleaner
-  tag: "0.1.0"
+  tag: "latest"
   pullPolicy: IfNotPresent
 
 # Config file content (will be mounted as ConfigMap)
