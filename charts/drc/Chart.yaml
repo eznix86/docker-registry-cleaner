@@ -2,5 +2,5 @@ apiVersion: v2
 name: drc
 description: Docker Registry Cleaner - Retention policy and garbage collection for Docker registries
 type: application
-version: 0.1.0
-appVersion: "0.1.0"
+version: 0.1.1
+appVersion: "0.1.1"
