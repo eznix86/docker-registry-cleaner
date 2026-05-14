@@ -55,8 +55,12 @@ func main() {
 				return err
 			}
 
-			if err := gc.Run(ctx, reg, regLogger); err != nil {
-				return err
+			if !cfg.DryRun {
+				if err := gc.Run(ctx, reg, regLogger); err != nil {
+					return err
+				}
+			} else {
+				regLogger.Info("skipping garbage collection (dry run)")
 			}
 
 			regLogger.Info("registry processing complete")
