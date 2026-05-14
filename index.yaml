@@ -1,3 +1,15 @@
 apiVersion: v1
-entries: {}
-generated: "2026-05-14T00:00:00Z"
+entries:
+  drc:
+  - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2026-05-14T17:28:57.177842819Z"
+    description: Docker Registry Cleaner - Retention policy and garbage collection
+      for Docker registries
+    digest: 210b985833cd90db6baaa81f305ca4663d3488d419a3e14430f5a14239603b74
+    name: drc
+    type: application
+    urls:
+    - https://github.com/eznix86/docker-registry-cleaner/releases/download/drc-0.1.0/drc-0.1.0.tgz
+    version: 0.1.0
+generated: "2026-05-14T17:28:57.177847526Z"
