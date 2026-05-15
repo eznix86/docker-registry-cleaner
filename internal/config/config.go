@@ -159,7 +159,7 @@ func (c *Config) validate() error {
 		if reg.URL == "" {
 			return fmt.Errorf("registries[%d]: url is required", i)
 		}
-		if reg.Keep <= 0 {
+		if !reg.GCOnly && reg.Keep <= 0 {
 			return fmt.Errorf("registries[%d]: keep must be greater than 0", i)
 		}
 		if reg.Kubernetes.Enabled {
