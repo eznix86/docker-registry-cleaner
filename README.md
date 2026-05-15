@@ -217,8 +217,8 @@ docker run --rm \
 
 DRC triggers GC by executing `registry garbage-collect` inside the running registry container:
 
-> [!IMPORTANT]
-> The registry must be stopped or in read-only mode during GC to avoid data corruption. DRC does not handle this automatically — ensure your deployment strategy accounts for this (e.g., scale to 0 replicas before GC).
+> [!NOTE]
+> Normally, the registry should be stopped or in read-only mode during GC to avoid data corruption. But what I would recommend is to schedule drc in your cronjob to be at a time you think there will be not image push (Like 3AM)
 
 ## Development
 
