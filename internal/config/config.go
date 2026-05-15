@@ -29,6 +29,7 @@ type Registry struct {
 	Keep           int               `yaml:"keep"`
 	DeleteUntagged bool              `yaml:"delete_untagged"`
 	Repos          map[string]Repo   `yaml:"repos"`
+	GCOnly         bool              `yaml:"gc_only"`
 }
 
 type Kubernetes struct {

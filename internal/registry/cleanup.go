@@ -22,6 +22,11 @@ type TagInfo struct {
 func CleanupRegistry(ctx context.Context, client *Client, cfg config.Registry, dryRun bool, logger *slog.Logger) ([]string, error) {
 	logger.Info("starting registry cleanup", "url", cfg.URL)
 
+	if cfg.GCOnly {
+		logger.Info("gc_only enabled, skipping tag cleanup")
+		return nil, nil
+	}
+
 	repos, err := client.GetCatalog(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("getting catalog: %w", err)

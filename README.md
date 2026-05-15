@@ -49,8 +49,9 @@ drc -c config.yaml
 | `password`         | string | No       | Basic auth password                  |
 | `username_env`     | string | No       | Env var for username                 |
 | `password_env`     | string | No       | Env var for password                 |
-| `keep`             | int    | Yes      | Default tags to keep per repository  |
+| `keep`             | int    | Yes*     | Default tags to keep per repository  |
 | `delete_untagged`  | bool   | No       | Delete manifests without tags        |
+| `gc_only`          | bool   | No       | Skip tag cleanup, only run GC        |
 
 ### Per-Repository Overrides
 
