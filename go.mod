@@ -4,7 +4,7 @@ go 1.25.2
 
 require (
 	github.com/docker/docker v28.5.2+incompatible
-	github.com/eznix86/registry-client v0.5.5
+	github.com/eznix86/registry-client v0.7.1
 	golang.org/x/sync v0.20.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.35.0
