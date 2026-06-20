@@ -1,6 +1,6 @@
 services:
   registry-auth:
-    image: registry:2
+    image: registry:3
     container_name: drc-registry-auth
     ports:
       - "5001:5000"
@@ -14,7 +14,7 @@ services:
       - registry-auth-data:/var/lib/registry
 
   registry-noauth:
-    image: registry:2
+    image: registry:3
     container_name: drc-registry-noauth
     ports:
       - "5002:5000"
