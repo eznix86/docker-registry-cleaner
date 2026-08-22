@@ -149,7 +149,7 @@ jobs:
         uses: azure/setup-helm@v5
 
       - name: Set chart version from tag
-        uses: mikefarah/yq@v4.47.2
+        uses: mikefarah/yq@v4.53.6
         env:
           VERSION: ${{ needs.version.outputs.version }}
         with:
