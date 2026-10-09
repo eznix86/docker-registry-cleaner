@@ -1,11 +1,11 @@
 module github.com/eznix86/docker-registry-cleaner
 
-go 1.25.2
+go 1.26.0
 
 require (
 	github.com/docker/docker v28.5.2+incompatible
 	github.com/eznix86/registry-client v0.5.5
-	golang.org/x/sync v0.20.0
+	golang.org/x/sync v0.24.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.35.0
 	k8s.io/apimachinery v0.35.0
